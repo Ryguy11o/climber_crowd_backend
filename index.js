@@ -2,9 +2,17 @@ const express = require('express')
 const path = require('path')
 const Airtable = require('airtable');
 const dotenv = require('dotenv');
+const cors = require('cors');
 const functions = require('./functions');
 const PORT = process.env.PORT || 5000
 const app = express();
+
+var corsOptions = {
+  origin: 'http://localhost:8080',
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+
+app.use(cors(corsOptions));
 
 dotenv.config();
 
