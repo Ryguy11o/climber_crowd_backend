@@ -4,7 +4,7 @@ const Airtable = require('airtable');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const functions = require('./functions');
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 5000;
 const app = express();
 
 var corsOptions = {
@@ -44,6 +44,27 @@ app.get('/api/routes', (req,res) => {
           res.send(routes); 
       }
     });
+});
+
+app.get('/api/announcements', (req,res) => {
+  const base = new Airtable({apiKey: process.env.VUE_APP_AIRTABLE_API_KEY}).base('appJF67FB8VuGSvDx');
+  const announcements = [];
+  base('Announcements').select({
+      view: "Grid view"
+  }).eachPage(function page(records, fetchNextPage) {
+
+      // This function (`page`) will get called for each page of records.
+      announcements.push(...records);
+
+      fetchNextPage();
+
+  }, function done(err) {
+      if (err) { 
+        console.error(err) 
+      } else {
+        res.send(announcements); 
+    }
+  });
 });
 
 app.listen(PORT, () => {
