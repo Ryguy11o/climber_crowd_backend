@@ -18,7 +18,7 @@ dotenv.config();
 
 app.use(express.static('dist'));
 
-app.get('/api/routes', (req,res) => {
+app.get('/api/bouldering', (req,res) => {
     const base = new Airtable({apiKey: process.env.VUE_APP_AIRTABLE_API_KEY}).base('appJF67FB8VuGSvDx');
     const routes = [];
     base('Bouldering').select({
@@ -26,12 +26,13 @@ app.get('/api/routes', (req,res) => {
         view: "Grid view"
     }).eachPage(function page(records, fetchNextPage) {
 
-        records.forEach((record, i) => {
+        const map = records.filter((record, i) => {
           record.fields.index = i + 1;
           record.fields.Color = functions.convertColors(record.fields.Color.replace(/\s/g, ''));
+          return record.fields['On Wall'];
         });
         // This function (`page`) will get called for each page of records.
-        routes.push(...records);
+        routes.push(...map);
         // To fetch the next page of records, call `fetchNextPage`.
         // If there are more records, `page` will get called again.
         // If there are no more records, `done` will get called.
@@ -44,6 +45,37 @@ app.get('/api/routes', (req,res) => {
           res.send(routes); 
       }
     });
+});
+
+app.get('/api/wall/:wall', (req,res) => {
+  const wall = req.params.wall;
+  if (wall === 'top-roping' || wall === 'lead') {
+    const base = new Airtable({apiKey: process.env.VUE_APP_AIRTABLE_API_KEY}).base('appJF67FB8VuGSvDx');
+    const routes = [];
+    base(wall).select({
+        // Selecting the first 3 records in Grid view:
+        view: "Grid view"
+    }).eachPage(function page(records, fetchNextPage) {
+  
+        const filteredRecoreds = records.filter((record, i) => {
+          record.fields.index = i + 1;
+          return record.fields['On Wall'];
+        });
+        // This function (`page`) will get called for each page of records.
+        routes.push(...filteredRecoreds);
+        // To fetch the next page of records, call `fetchNextPage`.
+        // If there are more records, `page` will get called again.
+        // If there are no more records, `done` will get called.
+        fetchNextPage();
+  
+    }, function done(err) {
+        if (err) { 
+          console.error(err) 
+        } else {
+          res.send(routes); 
+      }
+    });
+  }
 });
 
 app.get('/api/announcements', (req,res) => {
