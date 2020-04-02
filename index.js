@@ -18,6 +18,8 @@ dotenv.config();
 
 app.use(express.static('dist'));
 
+app.use(express.json())
+
 app.get('/api/bouldering', (req,res) => {
     const base = new Airtable({apiKey: process.env.VUE_APP_AIRTABLE_API_KEY}).base('appJF67FB8VuGSvDx');
     const routes = [];
@@ -95,6 +97,51 @@ app.get('/api/announcements', (req,res) => {
         console.error(err) 
       } else {
         res.send(announcements); 
+    }
+  });
+});
+
+app.get('/api/reviews', (req,res) => {
+  const base = new Airtable({apiKey: process.env.VUE_APP_AIRTABLE_API_KEY}).base('appJF67FB8VuGSvDx');
+  const reviews = [];
+  base('Reviews').select({
+      view: "Grid view"
+  }).eachPage(function page(records, fetchNextPage) {
+
+      // This function (`page`) will get called for each page of records.
+      reviews.push(...records);
+
+      fetchNextPage();
+
+  }, function done(err) {
+      if (err) { 
+        console.error(err) 
+      } else {
+        res.send(reviews); 
+    }
+  });
+});
+
+app.post('/api/reviews', (req, res) => {
+  const base = new Airtable({apiKey: process.env.VUE_APP_AIRTABLE_API_KEY}).base('appJF67FB8VuGSvDx');
+  if(req.body.Rating) {
+    req.body.Rating = parseInt(req.body.Rating);
+  }
+
+  if(req.body.Attempts) {
+    req.body.Attempts = parseInt(req.body.Attempts);
+  }
+
+  base('Reviews').create([
+    {
+      "fields": req.body
+    },
+  ], function(err, records) {
+    if (err) {
+      console.error(err);
+      return;
+    } else {
+      res.status(200).send();
     }
   });
 });
