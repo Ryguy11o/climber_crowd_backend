@@ -52,7 +52,7 @@ app.get('/api/bouldering', (req,res) => {
 
 app.get('/api/wall/:wall', (req,res) => {
   const wall = req.params.wall;
-  if (wall === 'top-roping' || wall === 'lead') {
+  if (wall === 'Top-Roping' || wall === 'Lead') {
     const base = new Airtable({apiKey: process.env.VUE_APP_AIRTABLE_API_KEY}).base('appJF67FB8VuGSvDx');
     const routes = [];
     base(wall).select({
@@ -152,7 +152,7 @@ app.post('/api/email', async(req, res) => {
 
   let resolveEmails = new Promise((resolve, reject) => {
       let emailList = [];
-      base('email-contact-list').select({
+      base('Email-Contact-List').select({
         view: "Grid view"
       }).eachPage(function page(emails, fetchNextPage) {
 
@@ -201,6 +201,8 @@ app.post('/api/email', async(req, res) => {
     });
   }
 });
+
+app.get('/*', express.static('dist'));
 
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
